@@ -7,6 +7,8 @@
         android:layout_width="130dp"
         android:layout_height="130dp"
         android:layout_marginLeft="10dp"
+        android:scaleType="centerCrop"
+        android:adjustViewBounds="false"
         android:layout_centerVertical="true"/>
     <TextView
         android:id="@+id/pd_title"

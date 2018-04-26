@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     private int showNum = 5;
     private EditText searchInput;
     private TextView searchButton;
+    private OkHttpClient okHttpClient = new OkHttpClient();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         pdAdapter = new PdAdapter(this, data);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         pdList.setLayoutManager(layoutManager);
+        pdList.addItemDecoration(new MyDecoration(this,MyDecoration.VERTICAL_LIST));
         pdList.setAdapter(pdAdapter);
         initEvent();
     }
@@ -60,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 searchWord = searchInput.getText().toString();
                 getJD();
                 getTianmao();
+                getMoguJie();
             }
         });
     }
@@ -101,7 +105,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getTianmao(){
-        OkHttpClient okHttpClient = new OkHttpClient();
         final Request request = new Request.Builder()
                 .url("https://list.tmall.com/m/search_items.htm?page_size=20&page_no=1&q="+searchWord)
                 .build();
@@ -127,6 +130,48 @@ public class MainActivity extends AppCompatActivity {
                         String img = "http:"+item1.getString("img");
                         String href = "http:"+item1.getString("url");
                         data.add(new pdModel(title,price,img,href,"Timao"));
+                        itemNum++;
+                    }
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        pdAdapter.notifyDataSetChanged();
+
+                    }
+                });
+            }
+        });
+    }
+
+    public void getMoguJie(){
+        final Request request = new Request.Builder()
+                .url("http://list.mogujie.com/search?_version=8193&ratio=3%3A4&cKey=43&sort=pop&page=1&q="+searchWord+"&minPrice=&maxPrice=&ppath=&cpc_offset=&_=1524669117445")
+                .build();
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+                Log.i("thg",e.getMessage());
+
+            }
+
+            @Override
+            public void onResponse(final Response response) throws IOException {
+                try {
+                    JSONObject jsonObject = new JSONObject(response.body().string());
+                    JSONArray items = jsonObject.getJSONObject("result").getJSONObject("wall").getJSONArray("docs");
+                    int itemNum = 0;
+                    while (itemNum<showNum){
+                        JSONObject item1 = items.getJSONObject(itemNum);
+                        String title = item1.getString("title");
+                        String price = item1.getString("price");
+                        String img = item1.getString("img");
+                        String href = item1.getString("link");
+                        data.add(new pdModel(title,price,img,href,"蘑菇街"));
                         itemNum++;
                     }
 
