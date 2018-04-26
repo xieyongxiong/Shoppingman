@@ -1,6 +1,7 @@
 package com.codenofree.shoppingman;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,7 +47,7 @@ public class PdAdapter extends RecyclerView.Adapter<PdAdapter.PdHolder> {
         return data.size();
     }
 
-    public class PdHolder extends RecyclerView.ViewHolder{
+    public class PdHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         ImageView pdImage;
         TextView pdTitle;
@@ -58,7 +59,14 @@ public class PdAdapter extends RecyclerView.Adapter<PdAdapter.PdHolder> {
             pdTitle = itemView.findViewById(R.id.pd_title);
             pdPrice = itemView.findViewById(R.id.pd_price);
             pdSource = itemView.findViewById(R.id.pd_source);
+            itemView.setOnClickListener(this);
+        }
 
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(mContext, WebActivity.class);
+            intent.putExtra("url", data.get(getAdapterPosition()).getHref());
+            mContext.startActivity(intent);
         }
     }
 }
