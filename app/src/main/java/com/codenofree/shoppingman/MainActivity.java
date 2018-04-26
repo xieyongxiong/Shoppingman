@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -24,6 +23,7 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,8 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView pdList;
     private PdAdapter pdAdapter;
     private List<pdModel> data = new ArrayList<>();
-    private String searchWord;
-    private int showNum = 5;
+    private String searchWord = "杯子";
+    private int showNum = 3;
     private EditText searchInput;
     private TextView searchButton;
     private OkHttpClient okHttpClient = new OkHttpClient();
@@ -64,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
                 getJD();
                 getTianmao();
                 getMoguJie();
+                getDangDang();
+                getGuomei();
+
             }
         });
     }
@@ -99,6 +102,8 @@ public class MainActivity extends AppCompatActivity {
                     });
                 } catch (IOException e) {
                     e.printStackTrace();
+                } catch (IndexOutOfBoundsException ex){
+                    return;
                 }
             }
         }).start();
@@ -147,15 +152,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void getMoguJie(){
+    public void getMoguJie() {
         final Request request = new Request.Builder()
-                .url("http://list.mogujie.com/search?_version=8193&ratio=3%3A4&cKey=43&sort=pop&page=1&q="+searchWord+"&minPrice=&maxPrice=&ppath=&cpc_offset=&_=1524669117445")
+                .url("http://list.mogujie.com/search?_version=8193&ratio=3%3A4&cKey=43&sort=pop&page=1&q=" + searchWord + "&minPrice=&maxPrice=&ppath=&cpc_offset=&_=1524669117445")
                 .build();
         Call call = okHttpClient.newCall(request);
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
-                Log.i("thg",e.getMessage());
+                Log.i("thg", e.getMessage());
 
             }
 
@@ -165,13 +170,13 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(response.body().string());
                     JSONArray items = jsonObject.getJSONObject("result").getJSONObject("wall").getJSONArray("docs");
                     int itemNum = 0;
-                    while (itemNum<showNum){
+                    while (itemNum < showNum) {
                         JSONObject item1 = items.getJSONObject(itemNum);
                         String title = item1.getString("title");
                         String price = item1.getString("price");
                         String img = item1.getString("img");
                         String href = item1.getString("link");
-                        data.add(new pdModel(title,price,img,href,"蘑菇街"));
+                        data.add(new pdModel(title, price, img, href, "蘑菇街"));
                         itemNum++;
                     }
 
@@ -187,5 +192,127 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+    public void getSuning(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Document document = Jsoup.connect("https://search.suning.com/杯子/")
+                            .get();
+
+                    Elements items = document.getElementById("filter-results").getElementsByClass("product");
+//                    int itemNum = 0;
+//                    while(itemNum<showNum){
+//                        String title = items.get(itemNum)
+//                    }
+                    Log.i("thg",items.get(0).toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public void getYHD(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Document document = Jsoup.connect("https://search.suning.com/杯子/")
+                            .get();
+
+                    Elements items = document.getElementById("filter-results").getElementsByClass("product");
+//                    int itemNum = 0;
+//                    while(itemNum<showNum){
+//                        String title = items.get(itemNum)
+//                    }
+                    Log.i("thg",items.get(0).toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    public void getGuomei(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Document document = Jsoup.connect("https://search.gome.com.cn/search?question="
+                            +searchWord+"&searchType=goods")
+                            .get();
+
+                    Elements items = document.getElementById("product-box").getElementsByTag("li");
+                    Log.i("thg",items.get(0).toString());
+
+                    int itemNum = 0;
+                    while (itemNum<showNum){
+                        Element item = items.get(itemNum).getElementsByClass("item-tab-warp").get(0).getElementsByClass("item-pic").get(0);
+                        String title = item.getElementsByTag("a").get(0).attr("title");
+                        String image = "https:"+item.getElementsByTag("a").get(0).getElementsByTag("img").attr("gome-src");
+                        String href = "https"+item.getElementsByTag("a").get(0).attr("href");
+                        String price = "--";
+                        data.add(new pdModel(title,price,image,href,"国美在线"));
+                        itemNum++;
+                        Log.i("thg","img:"+image);
+
+                    }
+                    Log.i("thg",items.get(0).toString());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            pdAdapter.notifyDataSetChanged();
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (IndexOutOfBoundsException ex){
+                    return;
+                }
+            }
+        }).start();
+    }
+
+    public void getDangDang(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Document document = Jsoup.connect("http://search.dangdang.com/?key="+searchWord+"&act=input")
+                            .get();
+
+                    Elements items = document.getElementById("12810").getElementsByTag("li");
+                    if(items.size()==0){
+                        return;
+                    }
+                    int itemNum = 0;
+                    while(itemNum<showNum){
+                        Element item = items.get(itemNum);
+                        String title = item.getElementsByTag("a").attr("title");
+                        String href = item.getElementsByTag("a").attr("href");
+                        String img = item.getElementsByTag("a").get(0).getElementsByTag("img").get(0).attr("src");
+                        Elements priceItem = item.getElementsByTag("p").get(0).getElementsByTag("span");
+                        String price;
+                        if(priceItem.size()==0){
+                            price = item.getElementsByClass("price").get(0).getElementsByClass("search_now_price").get(0).text();
+                            if(itemNum!=0){
+                                img = item.getElementsByTag("a").get(0).getElementsByTag("img").get(0).attr("data-original");
+                            }
+                        }else {
+                           price = priceItem.get(0).text();
+
+                        }
+                        data.add(new pdModel(title,price,img,href,"当当网"));
+                        itemNum++;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (IndexOutOfBoundsException ex){
+                    return;
+                }
+            }
+        }).start();
     }
 }
