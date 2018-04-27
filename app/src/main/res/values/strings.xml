@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Shoppingman</string>
+    <string name="tianmao">天猫</string>
+    <string name="jingdong">京东</string>
+    <string name="dangdang">当当网</string>
+    <string name="mogu">蘑菇街</string>
+    <string name="guomei">国美</string>
 </resources>

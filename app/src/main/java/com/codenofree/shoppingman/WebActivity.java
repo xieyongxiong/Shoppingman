@@ -41,7 +41,9 @@ public class WebActivity extends AppCompatActivity {
                     if(url.startsWith("weixin://") //微信
                             || url.startsWith("intent://dangdang://")
                             || url.startsWith("tbopen://")
-                            || url.startsWith("openapp:jdmobile://")
+                            || url.startsWith("openapp.jdmobile://")
+                            || url.startsWith("jsbridge://")
+                            || url.startsWith("gomeplusapp://")
                         //其他自定义的scheme
                             ) {
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));

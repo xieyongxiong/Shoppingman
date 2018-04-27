@@ -5,12 +5,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ImageView;
 
 import com.codenofree.shoppingman.model.pdModel;
+import com.codenofree.shoppingman.view.BottomTabView;
+import com.codenofree.shoppingman.view.PopupShow;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.OkHttpClient;
@@ -32,21 +33,29 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private Uri uri;
     private RecyclerView pdList;
+    private BottomTabView webFilterView;
+    private ImageView searchButton;
     private PdAdapter pdAdapter;
     private List<pdModel> data = new ArrayList<>();
     private String searchWord = "杯子";
     private int showNum = 3;
     private EditText searchInput;
-    private TextView searchButton;
+    private ImageView filterButton;
     private OkHttpClient okHttpClient = new OkHttpClient();
+    private int[] FILTER_IMAGE = {R.drawable.search, R.drawable.search, R.drawable.search, R.drawable.search, R.drawable.search};
+    private int[] FTLTER_TEXT = {R.string.tianmao, R.string.jingdong, R.string.dangdang, R.string.mogu, R.string.guomei};
 
+    private boolean isShowFilter = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        searchButton = (TextView) findViewById(R.id.search_button);
+        webFilterView = (BottomTabView)findViewById(R.id.web_filter);
+        filterButton = (ImageView) findViewById(R.id.filter_button);
+        searchButton = (ImageView) findViewById(R.id.search_icon);
         searchInput = (EditText) findViewById(R.id.search_input);
         pdList = (RecyclerView)findViewById(R.id.pdList);
+        webFilterView.setResource(FILTER_IMAGE, null, FTLTER_TEXT, R.color.colorAccent, 4);
         pdAdapter = new PdAdapter(this, data);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         pdList.setLayoutManager(layoutManager);
@@ -56,17 +65,47 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initEvent(){
+        filterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isShowFilter){
+                    PopupShow.hide(getBaseContext(), webFilterView, 50,50, 300, "top");
+                    isShowFilter = false;
+                }else {
+                    PopupShow.show(getBaseContext(), webFilterView, 50,50, 300, "top");
+                    isShowFilter = true;
+                }
+            }
+        });
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(isShowFilter){
+                    PopupShow.hide(getBaseContext(), webFilterView, 50,50, 300, "top");
+                    isShowFilter = false;
+                }
                 data.clear();
                 searchWord = searchInput.getText().toString();
-                getJD();
-                getTianmao();
-                getMoguJie();
-                getDangDang();
-                getGuomei();
-
+                List<Integer> filters = webFilterView.getSelected();
+                for(int i=0;i<filters.size();i++){
+                    switch (filters.get(i)){
+                        case 0:
+                            getTianmao();
+                            break;
+                        case 1:
+                            getJD();
+                            break;
+                        case 2:
+                            getDangDang();
+                            break;
+                        case 3:
+                            getMoguJie();
+                            break;
+                        case 4:
+                            getGuomei();
+                            break;
+                    }
+                }
             }
         });
     }
@@ -117,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
-                Log.i("thg",e.getMessage());
 
             }
 
@@ -160,7 +198,6 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
-                Log.i("thg", e.getMessage());
 
             }
 
@@ -206,7 +243,6 @@ public class MainActivity extends AppCompatActivity {
 //                    while(itemNum<showNum){
 //                        String title = items.get(itemNum)
 //                    }
-                    Log.i("thg",items.get(0).toString());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -227,7 +263,6 @@ public class MainActivity extends AppCompatActivity {
 //                    while(itemNum<showNum){
 //                        String title = items.get(itemNum)
 //                    }
-                    Log.i("thg",items.get(0).toString());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -245,21 +280,18 @@ public class MainActivity extends AppCompatActivity {
                             .get();
 
                     Elements items = document.getElementById("product-box").getElementsByTag("li");
-                    Log.i("thg",items.get(0).toString());
 
                     int itemNum = 0;
                     while (itemNum<showNum){
                         Element item = items.get(itemNum).getElementsByClass("item-tab-warp").get(0).getElementsByClass("item-pic").get(0);
                         String title = item.getElementsByTag("a").get(0).attr("title");
                         String image = "https:"+item.getElementsByTag("a").get(0).getElementsByTag("img").attr("gome-src");
-                        String href = "https"+item.getElementsByTag("a").get(0).attr("href");
+                        String href = "https:"+item.getElementsByTag("a").get(0).attr("href");
                         String price = "--";
                         data.add(new pdModel(title,price,image,href,"国美在线"));
                         itemNum++;
-                        Log.i("thg","img:"+image);
 
                     }
-                    Log.i("thg",items.get(0).toString());
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
