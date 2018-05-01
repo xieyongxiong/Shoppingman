@@ -39,6 +39,26 @@ public class PdAdapter extends RecyclerView.Adapter<PdAdapter.PdHolder> {
         holder.pdTitle.setText(data.get(position).getTitle());
         holder.pdPrice.setText("￥"+data.get(position).getPrice());
         holder.pdSource.setText("来自："+data.get(position).getSource());
+        switch (data.get(position).getSource()){
+            case "天猫":
+                holder.pdSourceImg.setImageResource(R.drawable.tm);
+                break;
+            case "京东":
+                holder.pdSourceImg.setImageResource(R.drawable.jd);
+                break;
+            case "国美在线":
+                holder.pdSourceImg.setImageResource(R.drawable.guomei);
+                break;
+            case "蘑菇街":
+                holder.pdSourceImg.setImageResource(R.drawable.mogujie);
+                break;
+            case "苏宁易购":
+                holder.pdSourceImg.setImageResource(R.drawable.suning);
+                break;
+            case "当当网":
+                holder.pdSourceImg.setImageResource(R.drawable.dangdang);
+                break;
+        }
 
     }
 
@@ -53,12 +73,15 @@ public class PdAdapter extends RecyclerView.Adapter<PdAdapter.PdHolder> {
         TextView pdTitle;
         TextView pdPrice;
         TextView pdSource;
+        ImageView pdSourceImg;
         public PdHolder(View itemView) {
             super(itemView);
             pdImage = itemView.findViewById(R.id.pd_img);
             pdTitle = itemView.findViewById(R.id.pd_title);
             pdPrice = itemView.findViewById(R.id.pd_price);
             pdSource = itemView.findViewById(R.id.pd_source);
+            pdSourceImg = itemView.findViewById(R.id.source_image);
+
             itemView.setOnClickListener(this);
         }
 

@@ -44,6 +44,7 @@ public class WebActivity extends AppCompatActivity {
                             || url.startsWith("openapp.jdmobile://")
                             || url.startsWith("jsbridge://")
                             || url.startsWith("gomeplusapp://")
+                            || url.startsWith("suning://")
                         //其他自定义的scheme
                             ) {
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));

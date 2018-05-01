@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -42,8 +43,8 @@ public class MainActivity extends AppCompatActivity {
     private EditText searchInput;
     private ImageView filterButton;
     private OkHttpClient okHttpClient = new OkHttpClient();
-    private int[] FILTER_IMAGE = {R.drawable.search, R.drawable.search, R.drawable.search, R.drawable.search, R.drawable.search};
-    private int[] FTLTER_TEXT = {R.string.tianmao, R.string.jingdong, R.string.dangdang, R.string.mogu, R.string.guomei};
+    private int[] FILTER_IMAGE = {R.drawable.tm, R.drawable.jd, R.drawable.dangdang, R.drawable.mogujie, R.drawable.guomei, R.drawable.suning};
+    private int[] FTLTER_TEXT = {R.string.tianmao, R.string.jingdong, R.string.dangdang, R.string.mogu, R.string.guomei, R.string.suning};
 
     private boolean isShowFilter = false;
     @Override
@@ -104,6 +105,12 @@ public class MainActivity extends AppCompatActivity {
                         case 4:
                             getGuomei();
                             break;
+                        case 5:
+                            getSuning();
+                            break;
+                        case 6:
+                            getJumei();
+                            break;
                     }
                 }
             }
@@ -129,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                         final String href = "http:"+item.getElementsByClass("p-img")
                                 .get(0).getElementsByTag("a").attr("href");
                         uri = Uri.parse(href);
-                        data.add(new pdModel(title,price,image,href,"JD"));
+                        data.add(new pdModel(title,price,image,href,"京东"));
                         itemNum++;
                     }
 
@@ -172,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
                         String price = item1.getString("price");
                         String img = "http:"+item1.getString("img");
                         String href = "http:"+item1.getString("url");
-                        data.add(new pdModel(title,price,img,href,"Timao"));
+                        data.add(new pdModel(title,price,img,href,"天猫"));
                         itemNum++;
                     }
 
@@ -239,10 +246,25 @@ public class MainActivity extends AppCompatActivity {
                             .get();
 
                     Elements items = document.getElementById("filter-results").getElementsByClass("product");
-//                    int itemNum = 0;
-//                    while(itemNum<showNum){
-//                        String title = items.get(itemNum)
-//                    }
+
+                    int itemNum = 0;
+                    while(itemNum<showNum){
+                        Element item = items.get(itemNum);
+                        String title = item.getElementsByTag("a").get(0).attr("title");
+                        String href = "http:"+item.getElementsByTag("a").get(0).attr("href");
+                        String img = "http:"+item.getElementsByTag("img").get(0).attr("src2");
+                        String price = item.getElementsByClass("prive").get(0).text();
+                        Element pr = item.getElementsByClass("prive").get(0);
+                        data.add(new pdModel(title, price, img, href, "苏宁易购"));
+                        itemNum++;
+                        Log.i("thg", "img"+pr);
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            pdAdapter.notifyDataSetChanged();
+                        }
+                    });
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -337,8 +359,52 @@ public class MainActivity extends AppCompatActivity {
 
                         }
                         data.add(new pdModel(title,price,img,href,"当当网"));
+
                         itemNum++;
                     }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            pdAdapter.notifyDataSetChanged();
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (IndexOutOfBoundsException ex){
+                    return;
+                }
+            }
+        }).start();
+    }
+    public void getJumei(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Document document = Jsoup.connect("http://search.jumei.com/?search="+searchWord)
+                            .get();
+
+                    Elements items = document.getElementsByClass("search_list_wrap").get(0).getElementsByTag("li");
+                    if(items.size()==0){
+                        return;
+                    }
+                    int itemNum = 0;
+                    while(itemNum<showNum){
+                        Element item = items.get(itemNum);
+                        String title = item.getElementsByTag("img").get(0).attr("alt");
+                        String href = item.getElementsByTag("a").get(0).attr("href");
+                        String img = item.getElementsByTag("img").get(0).attr("src");
+                        String price = item.getElementsByTag("span").get(0).text();
+                        Element pr = item.getElementsByClass("prive").get(0);
+                        data.add(new pdModel(title, price, img, href, "聚美优品"));
+                        itemNum++;
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            pdAdapter.notifyDataSetChanged();
+                        }
+                    });
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (IndexOutOfBoundsException ex){
