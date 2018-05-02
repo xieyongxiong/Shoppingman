@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.codenofree.shoppingman.model.pdModel;
-import com.codenofree.shoppingman.view.BottomTabView;
+import com.codenofree.shoppingman.view.FilterView;
 import com.codenofree.shoppingman.view.PopupShow;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
@@ -20,7 +20,6 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,28 +29,33 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
     private Uri uri;
     private RecyclerView pdList;
-    private BottomTabView webFilterView;
+    private FilterView webFilterView;
     private ImageView searchButton;
     private PdAdapter pdAdapter;
-    private List<pdModel> data = new ArrayList<>();
+    private Vector<pdModel> data = new Vector<>();
     private String searchWord = "杯子";
     private int showNum = 3;
     private EditText searchInput;
     private ImageView filterButton;
     private OkHttpClient okHttpClient = new OkHttpClient();
-    private int[] FILTER_IMAGE = {R.drawable.tm, R.drawable.jd, R.drawable.dangdang, R.drawable.mogujie, R.drawable.guomei, R.drawable.suning};
-    private int[] FTLTER_TEXT = {R.string.tianmao, R.string.jingdong, R.string.dangdang, R.string.mogu, R.string.guomei, R.string.suning};
+    private int[] FILTER_IMAGE = {R.drawable.tm, R.drawable.jd, R.drawable.dangdang, R.drawable.mogujie,
+            R.drawable.guomei, R.drawable.suning, R.drawable.jumei, R.drawable.taobao};
+    private int[] FTLTER_TEXT = {R.string.tianmao, R.string.jingdong, R.string.dangdang, R.string.mogu,
+            R.string.guomei, R.string.suning, R.string.jumei, R.string.taobao};
 
     private boolean isShowFilter = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        webFilterView = (BottomTabView)findViewById(R.id.web_filter);
+        webFilterView = (FilterView)findViewById(R.id.web_filter);
         filterButton = (ImageView) findViewById(R.id.filter_button);
         searchButton = (ImageView) findViewById(R.id.search_icon);
         searchInput = (EditText) findViewById(R.id.search_input);
@@ -70,10 +74,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(isShowFilter){
-                    PopupShow.hide(getBaseContext(), webFilterView, 50,50, 300, "top");
+                    PopupShow.hide(getBaseContext(), webFilterView, 50,100, 300, "top");
                     isShowFilter = false;
                 }else {
-                    PopupShow.show(getBaseContext(), webFilterView, 50,50, 300, "top");
+                    PopupShow.show(getBaseContext(), webFilterView, 100,50, 300, "top");
                     isShowFilter = true;
                 }
             }
@@ -81,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                showNum = webFilterView.getSearchNum();
                 if(isShowFilter){
                     PopupShow.hide(getBaseContext(), webFilterView, 50,50, 300, "top");
                     isShowFilter = false;
@@ -110,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
                             break;
                         case 6:
                             getJumei();
+                            break;
+                        case 7:
+                            getTaobao();
                             break;
                     }
                 }
@@ -146,9 +154,7 @@ public class MainActivity extends AppCompatActivity {
                             pdAdapter.notifyDataSetChanged();
                         }
                     });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (IndexOutOfBoundsException ex){
+                }catch (Exception e) {
                     return;
                 }
             }
@@ -183,8 +189,8 @@ public class MainActivity extends AppCompatActivity {
                         itemNum++;
                     }
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                }catch (Exception e) {
+                    return;
                 }
                 runOnUiThread(new Runnable() {
                     @Override
@@ -224,8 +230,8 @@ public class MainActivity extends AppCompatActivity {
                         itemNum++;
                     }
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    return;
                 }
                 runOnUiThread(new Runnable() {
                     @Override
@@ -242,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    Document document = Jsoup.connect("https://search.suning.com/杯子/")
+                    Document document = Jsoup.connect("https://search.suning.com/"+searchWord+"/")
                             .get();
 
                     Elements items = document.getElementById("filter-results").getElementsByClass("product");
@@ -265,8 +271,8 @@ public class MainActivity extends AppCompatActivity {
                             pdAdapter.notifyDataSetChanged();
                         }
                     });
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception e) {
+                    return;
                 }
             }
         }).start();
@@ -285,8 +291,8 @@ public class MainActivity extends AppCompatActivity {
 //                    while(itemNum<showNum){
 //                        String title = items.get(itemNum)
 //                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                }catch (Exception e) {
+                    return;
                 }
             }
         }).start();
@@ -320,9 +326,7 @@ public class MainActivity extends AppCompatActivity {
                             pdAdapter.notifyDataSetChanged();
                         }
                     });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (IndexOutOfBoundsException ex){
+                } catch (Exception e) {
                     return;
                 }
             }
@@ -368,26 +372,23 @@ public class MainActivity extends AppCompatActivity {
                             pdAdapter.notifyDataSetChanged();
                         }
                     });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (IndexOutOfBoundsException ex){
+                } catch (Exception e) {
                     return;
                 }
             }
         }).start();
     }
     public void getJumei(){
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Document document = Jsoup.connect("http://search.jumei.com/?search="+searchWord)
+                    Document document = Jsoup.connect("http://search.jumei.com/?filter=0-11-1&search="+searchWord+"&from=&cat=")
                             .get();
 
-                    Elements items = document.getElementsByClass("search_list_wrap").get(0).getElementsByTag("li");
-                    if(items.size()==0){
-                        return;
-                    }
+                    Elements items = document.getElementById("search_list_wrap").getElementsByClass("products_wrap").get(0).getElementsByTag("li");
+
                     int itemNum = 0;
                     while(itemNum<showNum){
                         Element item = items.get(itemNum);
@@ -395,8 +396,8 @@ public class MainActivity extends AppCompatActivity {
                         String href = item.getElementsByTag("a").get(0).attr("href");
                         String img = item.getElementsByTag("img").get(0).attr("src");
                         String price = item.getElementsByTag("span").get(0).text();
-                        Element pr = item.getElementsByClass("prive").get(0);
                         data.add(new pdModel(title, price, img, href, "聚美优品"));
+
                         itemNum++;
                     }
                     runOnUiThread(new Runnable() {
@@ -405,9 +406,76 @@ public class MainActivity extends AppCompatActivity {
                             pdAdapter.notifyDataSetChanged();
                         }
                     });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (IndexOutOfBoundsException ex){
+                } catch (Exception e) {
+                    return;
+                }
+            }
+        }).start();
+    }
+    public void getTaobao(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Document document = Jsoup.connect("https://s.taobao.com/search?q="+searchWord)
+                            .get();
+
+                    List<String> titles = new ArrayList<String>();
+                    String titleRegex = "raw_title\":\"(.*?)\"";
+                    Pattern p = Pattern.compile(titleRegex);
+                    Matcher m = p.matcher(document.outerHtml());
+                    while (m.find()){
+                        titles.add(m.group().substring(12,m.group().length()-1));
+                    }
+
+                    List<String> imgs = new ArrayList<String>();
+                    String imgRegex = "pic_url\":\"(.*?)\"";
+                    Pattern p1 = Pattern.compile(imgRegex);
+                    Matcher m1 = p1.matcher(document.outerHtml());
+                    while (m1.find()){
+                        imgs.add("http:"+m1.group().substring(10,m1.group().length()-1));
+                    }
+
+                    List<String> hrefs = new ArrayList<String>();
+                    String hrefRegex = "detail_url\":\"(.*?)\"";
+                    Pattern p2 = Pattern.compile(hrefRegex);
+                    Matcher m2 = p2.matcher(document.outerHtml());
+                    while (m2.find()){
+                        hrefs.add("https:"+m2.group().substring(13,m2.group().length()-1));
+                    }
+
+                    List<String> prices = new ArrayList<String>();
+                    String priceRegex = "view_price\":\"(.*?)\"";
+                    Pattern p3 = Pattern.compile(priceRegex);
+                    Matcher m3 = p3.matcher(document.outerHtml());
+                    while (m3.find()){
+                        prices.add(m3.group().substring(13,m3.group().length()-1));
+                    }
+                    for(int i=0; i<titles.size();i++){
+                        Log.i("thg",titles.get(i));
+                        Log.i("thg",imgs.get(i));
+                        Log.i("thg",hrefs.get(i));
+                        Log.i("thg",prices.get(i));
+
+                    }
+
+
+                    int itemNum = 1;
+                    while(itemNum<showNum+1){
+                        String title = titles.get(itemNum);
+                        String href = hrefs.get(itemNum);
+                        String img = imgs.get(itemNum);
+                        String price = prices.get(itemNum);
+                        data.add(new pdModel(title, price, img, href, "淘宝网"));
+                        itemNum++;
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            pdAdapter.notifyDataSetChanged();
+                        }
+                    });
+                } catch (Exception e) {
                     return;
                 }
             }

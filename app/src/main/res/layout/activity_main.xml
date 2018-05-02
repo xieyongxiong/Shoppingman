@@ -13,12 +13,13 @@
         android:layout_marginTop="50dp">
 
     </android.support.v7.widget.RecyclerView>
-    <com.codenofree.shoppingman.view.BottomTabView
+    <com.codenofree.shoppingman.view.FilterView
         android:id="@+id/web_filter"
         android:layout_width="match_parent"
         android:layout_height="150dp"
-        android:layout_marginTop="-50dp">
-    </com.codenofree.shoppingman.view.BottomTabView>
+        android:layout_marginTop="-100dp"
+        android:background="@color/white">
+    </com.codenofree.shoppingman.view.FilterView>
     <RelativeLayout
         android:id="@+id/search_layout"
         android:layout_width="match_parent"

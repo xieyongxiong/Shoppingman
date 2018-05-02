@@ -42,9 +42,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12sp"
-            android:text="AAA"
-            android:layout_marginRight="5dp"
-            android:visibility="gone"/>
+            android:gravity="center"
+            android:text="来自："
+            android:layout_marginRight="5dp" />
         <ImageView
             android:id="@+id/source_image"
             android:layout_width="40dp"

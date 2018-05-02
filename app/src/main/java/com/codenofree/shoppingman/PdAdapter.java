@@ -13,6 +13,7 @@ import com.bumptech.glide.Glide;
 import com.codenofree.shoppingman.model.pdModel;
 
 import java.util.List;
+import java.util.Vector;
 
 /**
  * Created by xieyongxiong on 2018/4/25.
@@ -21,8 +22,8 @@ import java.util.List;
 public class PdAdapter extends RecyclerView.Adapter<PdAdapter.PdHolder> {
     private Context mContext;
     private LayoutInflater inflater;
-    private List<pdModel> data;
-    public PdAdapter(Context mContext, List<pdModel> datas) {
+    private Vector<pdModel> data;
+    public PdAdapter(Context mContext, Vector<pdModel> datas) {
         this.mContext = mContext;
         inflater = LayoutInflater.from(mContext);
         data = datas;
@@ -36,9 +37,13 @@ public class PdAdapter extends RecyclerView.Adapter<PdAdapter.PdHolder> {
     @Override
     public void onBindViewHolder(PdHolder holder, int position) {
         Glide.with(mContext).load(data.get(position).getImage()).into(holder.pdImage);
-        holder.pdTitle.setText(data.get(position).getTitle());
+        if(data.get(position).getTitle().length()>50){
+            holder.pdTitle.setText(data.get(position).getTitle().substring(0,50)+"...");
+        }else {
+            holder.pdTitle.setText(data.get(position).getTitle());
+        }
         holder.pdPrice.setText("￥"+data.get(position).getPrice());
-        holder.pdSource.setText("来自："+data.get(position).getSource());
+//        holder.pdSource.setText("来自："+data.get(position).getSource());
         switch (data.get(position).getSource()){
             case "天猫":
                 holder.pdSourceImg.setImageResource(R.drawable.tm);
@@ -57,6 +62,13 @@ public class PdAdapter extends RecyclerView.Adapter<PdAdapter.PdHolder> {
                 break;
             case "当当网":
                 holder.pdSourceImg.setImageResource(R.drawable.dangdang);
+                holder.pdPrice.setText(data.get(position).getPrice());
+                break;
+            case "聚美优品":
+                holder.pdSourceImg.setImageResource(R.drawable.jumei);
+                break;
+            case "淘宝网":
+                holder.pdSourceImg.setImageResource(R.drawable.taobao);
                 break;
         }
 

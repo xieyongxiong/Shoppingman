@@ -1,16 +1,16 @@
 package com.codenofree.shoppingman.view;
 
 import android.content.Context;
-import android.os.Build;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputFilter;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -25,8 +25,9 @@ import java.util.List;
  * Created by xieyongxiong on 2018/1/15.
  */
 
-public class BottomTabView extends FrameLayout {
+public class FilterView extends FrameLayout {
     RecyclerView mRecyclerView;
+    private EditText searchNumEditText;
     private Context mContext;
     private int[] mImages;
     private int[] mSelectedImages;
@@ -37,23 +38,26 @@ public class BottomTabView extends FrameLayout {
     private GridLayoutManager mGridLayoutManager;
     private List<Integer> filterSelected = new ArrayList<>();
 
-    public BottomTabView(Context context) {
+    public FilterView(Context context) {
         super(context);
     }
 
-    public BottomTabView(Context context, @Nullable AttributeSet attrs) {
+    public FilterView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
         initView();
     }
 
-    public BottomTabView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public FilterView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
     public void initView() {
-        View view = View.inflate(mContext, R.layout.bottom_tab_view, this);
+        View view = View.inflate(mContext, R.layout.filter_view, this);
         mRecyclerView = view.findViewById(R.id.recyclerView);
+        searchNumEditText = view.findViewById(R.id.search_num);
+        searchNumEditText.setText("3");
+        searchNumEditText.setFilters(new InputFilter[]{new InputFilterMinMax("1","6")});
     }
 
     public void setResource(int[] images, int[] selectedImage, int[] titles, int color, int colums) {
@@ -109,6 +113,7 @@ public class BottomTabView extends FrameLayout {
     public List<Integer> getSelected(){
         return filterSelected;
     }
+    public int getSearchNum(){return Integer.parseInt(searchNumEditText.getText().toString());}
 
     public interface OnItemClickListener {
         void onItemClick(View view, int postion);
@@ -127,7 +132,7 @@ public class BottomTabView extends FrameLayout {
 
         @Override
         public BottomTabHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new BottomTabHolder(inflater.inflate(R.layout.bottom_tab_item, parent, false));
+            return new BottomTabHolder(inflater.inflate(R.layout.filter_tab_item, parent, false));
         }
 
         @Override
